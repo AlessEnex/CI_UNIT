@@ -1,0 +1,25 @@
+{
+  "nome_progetto": "",
+  "numero_progetto": "",
+  "anno": "",
+  "quadro_elettrico": "",
+  "metri_cablaggio": "",
+  "cablaggio_presente": "",
+  "modulo_serbatoi": "",
+  "materiale_connessione": "",
+  "materiale_isolamento": "",
+  "isolamento_ht": false,
+  "isolamento_separatore_olio": false,
+  "convogliamento": false,
+  "cartucce_filtri_montate": false,
+  "componenti_spediti_a_parte": {
+    "backup_unit": false,
+    "safety_valves": false,
+    "muffler": false,
+    "scambiatori_a_piatre": ""
+  },
+  "altre_specialita": {
+    "valvole_piombate": false,
+    "fascette_metalliche": false
+  }
+}
