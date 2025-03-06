@@ -1,1 +1,70 @@
 
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carta d'Identità Unità Frigo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Carta d'Identità Unità Frigo</h1>
+        
+        <!-- Area Drag & Drop per CSV -->
+        <div id="drop-area" class="drop-area">
+            <p>Trascina qui il tuo file CSV o clicca per selezionarlo</p>
+            <input type="file" id="file-input" accept=".csv">
+        </div>
+        
+        <form id="unit-form">
+            <label>Nome Progetto: <input type="text" name="nome_progetto"></label>
+            <label>Numero Progetto: <input type="text" name="numero_progetto"></label>
+            <label>Anno: <input type="number" name="anno"></label>
+            
+            <h3>Quadro Elettrico</h3>
+            <label><input type="radio" name="quadro_elettrico" value="non presente"> Non presente</label>
+            <label><input type="radio" name="quadro_elettrico" value="attaccato"> Attaccato</label>
+            <label><input type="radio" name="quadro_elettrico" value="staccato"> Staccato</label>
+            <label>Metri di cablaggio: <input type="number" name="metri_cablaggio"></label>
+            
+            <h3>Cablaggio Presente</h3>
+            <label><input type="radio" name="cablaggio_presente" value="si"> Sì</label>
+            <label><input type="radio" name="cablaggio_presente" value="no"> No</label>
+            
+            <h3>Modulo Serbatoi</h3>
+            <label><input type="radio" name="modulo_serbatoi" value="attaccato"> Attaccato</label>
+            <label><input type="radio" name="modulo_serbatoi" value="staccato"> Staccato</label>
+            <label>Materiale connessione:
+                <select name="materiale_connessione">
+                    <option value="inox">Inox</option>
+                    <option value="k65">K65</option>
+                </select>
+            </label>
+            
+            <h3>Materiale Isolamento</h3>
+            <label><input type="radio" name="materiale_isolamento" value="standard"> Standard</label>
+            <label><input type="radio" name="materiale_isolamento" value="halogen free"> Halogen Free</label>
+            
+            <h3>Opzioni</h3>
+            <label><input type="checkbox" name="isolamento_ht"> Isolamento HT</label>
+            <label><input type="checkbox" name="isolamento_separatore_olio"> Isolamento Separatore Olio</label>
+            <label><input type="checkbox" name="convogliamento"> Convogliamento</label>
+            <label><input type="checkbox" name="cartucce_filtri_montate"> Cartucce Filtri Montate</label>
+            
+            <h3>Componenti Spediti a Parte</h3>
+            <label><input type="checkbox" name="backup_unit"> Backup Unit</label>
+            <label><input type="checkbox" name="safety_valves"> Safety Valves</label>
+            <label><input type="checkbox" name="muffler"> Muffler</label>
+            <label><input type="checkbox" name="scambiatori_piatre"> Scambiatori a Piastre</label>
+            
+            <h3>Altre Specialità</h3>
+            <label><input type="checkbox" name="valvole_piombate"> Valvole Piombate</label>
+            <label><input type="checkbox" name="fascette_metalliche"> Fascette Metalliche</label>
+            
+            <button type="button" id="generate-pdf">Genera PDF</button>
+        </form>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
