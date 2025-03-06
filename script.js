@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("unit-form");
     const generatePdfBtn = document.getElementById("generate-pdf");
 
+    // Funzione per leggere il CSV
     function readCSV(file) {
         const reader = new FileReader();
         reader.onload = (event) => {
@@ -12,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
         reader.readAsText(file);
     }
 
+    // Funzione per elaborare i dati CSV e riempire il form
     function parseCSV(csvText) {
         const rows = csvText.split("\n").map(row => row.split(","));
         const headers = rows[0].map(h => h.trim().toLowerCase().replace(/\s+/g, "_"));
@@ -27,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const radio = form.querySelector(`[name="${header}"][value="${value}"]`);
                 if (radio) radio.checked = true;
             } else if (input.type === "checkbox") {
-                input.checked = value.toLowerCase() === "si";
+                input.checked = value.toLowerCase() === "sì";
             } else if (input.tagName === "SELECT") {
                 input.value = value;
             } else {
@@ -36,6 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // Drag & Drop
     dropArea.addEventListener("dragover", (e) => {
         e.preventDefault();
         dropArea.classList.add("dragover");
@@ -57,7 +60,64 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Generazione PDF con sezioni chiare e traduzione "SÌ/NO"
+    // Funzione per esportare i dati del form in CSV
+    function exportToCSV() {
+        let csvContent = "";
+        const formData = new FormData(form);
+        let headers = [];
+        let values = [];
+
+        // Creiamo intestazione e valori
+        formData.forEach((value, key) => {
+            headers.push(key.replace(/_/g, " "));
+            
+            // Convertiamo i checkbox in "SÌ" o "NO"
+            const inputElement = document.querySelector(`[name="${key}"]`);
+            if (inputElement?.type === "checkbox") {
+                values.push(inputElement.checked ? "SÌ" : "NO");
+            } else {
+                values.push(value);
+            }
+        });
+
+        csvContent += headers.join(",") + "\n";
+        csvContent += values.join(",") + "\n";
+
+        // Creiamo un blob con i dati CSV
+        const blob = new Blob([csvContent], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+
+        // Creiamo un link temporaneo per il download
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "unit_data.csv";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        // Rilasciamo l'oggetto URL per evitare memory leak
+        URL.revokeObjectURL(url);
+    }
+
+    // Creazione del pulsante per esportare in CSV
+    const exportCsvBtn = document.createElement("button");
+    exportCsvBtn.textContent = "Esporta CSV";
+    exportCsvBtn.id = "export-csv";
+    exportCsvBtn.style.display = "block";
+    exportCsvBtn.style.width = "100%";
+    exportCsvBtn.style.padding = "12px";
+    exportCsvBtn.style.marginTop = "10px";
+    exportCsvBtn.style.border = "none";
+    exportCsvBtn.style.borderRadius = "5px";
+    exportCsvBtn.style.backgroundColor = "#2196F3";
+    exportCsvBtn.style.color = "white";
+    exportCsvBtn.style.fontSize = "16px";
+    exportCsvBtn.style.cursor = "pointer";
+    exportCsvBtn.style.transition = "background 0.3s ease";
+    exportCsvBtn.addEventListener("click", exportToCSV);
+    form.appendChild(exportCsvBtn);
+
+    // Generazione PDF con sezioni chiare e formattazione pulita
     generatePdfBtn.addEventListener("click", () => {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
@@ -104,12 +164,10 @@ document.addEventListener("DOMContentLoaded", () => {
         formData.forEach((value, key) => {
             let formattedKey = key.replace(/_/g, " ");
 
-            // Traduzione delle checkbox in "SÌ" o "NO"
             if (document.querySelector(`[name="${key}"]`)?.type === "checkbox") {
                 value = document.querySelector(`[name="${key}"]`).checked ? "SÌ" : "NO";
             }
 
-            // Se cambia la sezione, aggiungiamo un titolo
             if (sections[key] && currentSection !== sections[key]) {
                 y += 5;
                 doc.setFont("helvetica", "bold");
@@ -119,11 +177,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 currentSection = sections[key];
             }
 
-            // Aggiunge il dato nel PDF
             doc.text(`${formattedKey.toUpperCase()}: ${value}`, 10, y);
             y += 7;
 
-            // Gestione della nuova pagina se lo spazio è insufficiente
             if (y > 270) {
                 doc.addPage();
                 y = 15;
@@ -133,4 +189,3 @@ document.addEventListener("DOMContentLoaded", () => {
         doc.save("unit_id_card.pdf");
     });
 });
-
