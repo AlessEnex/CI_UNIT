@@ -30,8 +30,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (radio) radio.checked = true;
             } else if (input.type === "checkbox") {
                 input.checked = value.toLowerCase() === "sì";
-            } else if (input.tagName === "SELECT") {
-                input.value = value;
             } else {
                 input.value = value;
             }
@@ -140,26 +138,36 @@ document.addEventListener("DOMContentLoaded", () => {
         let currentSection = "";
 
         const sections = {
-            "nome_progetto": "INFORMAZIONI GENERALI",
-            "numero_progetto": "INFORMAZIONI GENERALI",
-            "anno": "INFORMAZIONI GENERALI",
-            "quadro_elettrico": "QUADRO ELETTRICO",
-            "metri_cablaggio": "QUADRO ELETTRICO",
-            "cablaggio_presente": "CABAGGIO",
-            "modulo_serbatoi": "MODULO SERBATOI",
-            "materiale_connessione": "MODULO SERBATOI",
-            "materiale_isolamento": "ISOLAMENTO",
-            "isolamento_ht": "OPZIONI",
-            "isolamento_separatore_olio": "OPZIONI",
-            "convogliamento": "OPZIONI",
-            "cartucce_filtri_montate": "OPZIONI",
-            "backup_unit": "COMPONENTI SPEDITI A PARTE",
-            "safety_valves": "COMPONENTI SPEDITI A PARTE",
-            "muffler": "COMPONENTI SPEDITI A PARTE",
-            "scambiatori_piatre": "COMPONENTI SPEDITI A PARTE",
-            "valvole_piombate": "ALTRE SPECIALITÀ",
-            "fascette_metalliche": "ALTRE SPECIALITÀ"
-        };
+    "nome_progettista": "INFORMAZIONI GENERALI",
+    "nome_disegnatore": "INFORMAZIONI GENERALI",
+    "nome_progetto": "INFORMAZIONI GENERALI",
+    "numero_progetto": "INFORMAZIONI GENERALI",
+    "anno": "INFORMAZIONI GENERALI",
+    "quadro_elettrico": "QUADRO ELETTRICO",
+    "metri_cablaggio": "QUADRO ELETTRICO",
+    "cablaggio_presente": "CABAGGIO",
+    "modulo_compressori": "MODULO COMPRESSORI",
+    "modulo_serbatoi": "MODULO SERBATOI",
+    "materiale_connessione": "MODULO SERBATOI",
+    "materiale_isolamento": "ISOLAMENTO",
+    "isolamento_ht": "OPZIONI",
+    "isolamento_separatore_olio": "OPZIONI",
+    "convogliamento": "OPZIONI",
+    "cartucce_filtri_montate": "OPZIONI",
+    "backup_unit": "COMPONENTI SPEDITI A PARTE",
+    "safety_valves": "COMPONENTI SPEDITI A PARTE",
+    "muffler": "COMPONENTI SPEDITI A PARTE",
+    "scambiatori_piatre": "COMPONENTI SPEDITI A PARTE",
+    "scambiatori_dettagli": "COMPONENTI SPEDITI A PARTE",
+    "valvole_piombate": "ALTRE SPECIALITÀ",
+    "valvole_piombate_descrizione": "ALTRE SPECIALITÀ",
+    "fascette_metalliche": "ALTRE SPECIALITÀ",
+    "specialita_1": "ALTRE SPECIALITÀ",
+    "specialita_1_descrizione": "ALTRE SPECIALITÀ",
+    "specialita_2": "ALTRE SPECIALITÀ",
+    "specialita_2_descrizione": "ALTRE SPECIALITÀ"
+};
+
 
         formData.forEach((value, key) => {
             let formattedKey = key.replace(/_/g, " ");
