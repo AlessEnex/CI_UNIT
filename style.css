@@ -1,61 +1,101 @@
-/* Reset di base */
+/* Stile Generale */
 body {
     font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
     margin: 0;
-    padding: 0;
-    background-color: #f5f5f5;
-    color: #333;
+    padding: 20px;
 }
 
 /* Contenitore principale */
 .container {
-    max-width: 600px;
-    margin: 30px auto;
-    padding: 20px;
+    max-width: 900px;
     background: white;
+    padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin: auto;
 }
 
-/* Titoli */
+/* Stile del titolo */
 h1 {
     text-align: center;
-    font-size: 22px;
+    color: #333;
+}
+
+/* Area Drag & Drop */
+.drop-area {
+    border: 2px dashed #2196F3;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
     margin-bottom: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
 }
 
-h3 {
-    margin-top: 20px;
-    font-size: 18px;
-    border-bottom: 2px solid #ddd;
-    padding-bottom: 5px;
+.drop-area.dragover {
+    background-color: #e3f2fd;
 }
 
-/* Spaziatura tra gruppi di input */
-label {
+/* Stile Form */
+form label {
     display: block;
     margin: 10px 0;
-    font-size: 14px;
 }
 
-/* Input, Select, Radio e Checkbox */
-input[type="text"], 
-input[type="number"], 
-select {
+form input, form select {
     width: 100%;
-    padding: 8px;
+    padding: 10px;
     margin-top: 5px;
-    border: 1px solid #ddd;
+    border: 1px solid #ccc;
     border-radius: 5px;
-    font-size: 14px;
 }
 
-input[type="radio"], 
-input[type="checkbox"] {
+/* Stile per i radio e checkbox */
+input[type="radio"], input[type="checkbox"] {
+    width: auto;
     margin-right: 5px;
 }
 
-/* Pulsante per generare PDF */
+/* Layout per Nome Progettista e Disegnatore */
+.row {
+    display: flex;
+    gap: 20px; /* Spazio tra i campi */
+    align-items: center;
+    margin-bottom: 15px; /* Aggiunge spazio sotto */
+}
+
+.row label {
+    flex: 1;
+    min-width: 180px; /* Evita compressione e sovrapposizione */
+    margin-bottom: 5px;
+}
+
+.row input {
+    width: 100%;
+    min-width: 220px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Layout a due colonne */
+.columns {
+    display: flex;
+    gap: 25px; /* Spazio tra le colonne */
+    margin-top: 20px;
+}
+
+/* Stile delle colonne */
+.column {
+    flex: 1;
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Stile Pulsanti */
 button {
     display: block;
     width: 100%;
@@ -63,7 +103,7 @@ button {
     margin-top: 20px;
     border: none;
     border-radius: 5px;
-    background-color: #4CAF50;
+    background-color: #2196F3;
     color: white;
     font-size: 16px;
     cursor: pointer;
@@ -71,28 +111,16 @@ button {
 }
 
 button:hover {
-    background-color: #388E3C;
+    background-color: #1976D2;
 }
 
-/* Area Drag & Drop */
-.drop-area {
-    border: 2px dashed #4CAF50;
-    padding: 20px;
-    margin-bottom: 20px;
-    text-align: center;
-    background-color: #fafafa;
-    cursor: pointer;
-    transition: background 0.3s ease;
-}
+/* Responsive: su schermi piccoli i campi vanno in colonna */
+@media (max-width: 768px) {
+    .row {
+        flex-direction: column;
+    }
 
-.drop-area:hover {
-    background-color: #e6ffe6;
-}
-
-/* Responsive per schermi più piccoli */
-@media (max-width: 600px) {
-    .container {
-        width: 90%;
-        margin: 20px auto;
+    .columns {
+        flex-direction: column;
     }
 }
