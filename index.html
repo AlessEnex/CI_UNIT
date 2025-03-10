@@ -21,6 +21,12 @@
             <label>Numero Progetto: <input type="text" name="numero_progetto"></label>
             <label>Anno: <input type="number" name="anno"></label>
             
+            <!-- Campi Nome Progettista e Disegnatore -->
+            <div class="row">
+                <label>Nome Progettista: <input type="text" name="nome_progettista"></label>
+                <label>Nome Disegnatore: <input type="text" name="nome_disegnatore"></label>
+            </div>
+
             <h3>Quadro Elettrico</h3>
             <label><input type="radio" name="quadro_elettrico" value="non presente"> Non presente</label>
             <label><input type="radio" name="quadro_elettrico" value="attaccato"> Attaccato</label>
@@ -30,6 +36,11 @@
             <h3>Cablaggio Presente</h3>
             <label><input type="radio" name="cablaggio_presente" value="si"> Sì</label>
             <label><input type="radio" name="cablaggio_presente" value="no"> No</label>
+
+            <!-- Modulo Compressori -->
+            <h3>Modulo Compressori</h3>
+            <label><input type="radio" name="modulo_compressori" value="pezzo_singolo"> Pezzo Singolo</label>
+            <label><input type="radio" name="modulo_compressori" value="due_pezzi"> Due Pezzi</label>
             
             <h3>Modulo Serbatoi</h3>
             <label><input type="radio" name="modulo_serbatoi" value="attaccato"> Attaccato</label>
@@ -55,11 +66,26 @@
             <label><input type="checkbox" name="backup_unit"> Backup Unit</label>
             <label><input type="checkbox" name="safety_valves"> Safety Valves</label>
             <label><input type="checkbox" name="muffler"> Muffler</label>
-            <label><input type="checkbox" name="scambiatori_piatre"> Scambiatori a Piastre</label>
+            <label>
+                <input type="checkbox" name="scambiatori_piatre"> Scambiatori a Piastre
+                <input type="text" name="scambiatori_dettagli" placeholder="Specificare quali">
+            </label>
             
             <h3>Altre Specialità</h3>
-            <label><input type="checkbox" name="valvole_piombate"> Valvole Piombate</label>
-            <label><input type="checkbox" name="fascette_metalliche"> Fascette Metalliche</label>
+<label>
+    <input type="checkbox" name="valvole_piombate"> Valvole Piombate
+    <input type="text" name="valvole_piombate_descrizione" placeholder="Se sì, quali?">
+</label>
+<label><input type="checkbox" name="fascette_metalliche"> Fascette Metalliche</label>
+<label>
+    <input type="checkbox" name="specialita_1">
+    <input type="text" name="specialita_1_descrizione" placeholder="Descrizione 1">
+</label>
+<label>
+    <input type="checkbox" name="specialita_2">
+    <input type="text" name="specialita_2_descrizione" placeholder="Descrizione 2">
+</label>
+
             
             <button type="button" id="generate-pdf">Genera PDF</button>
         </form>
@@ -67,4 +93,4 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="script.js"></script>
 </body>
-</html> 
+</html>
