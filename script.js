@@ -4,7 +4,46 @@ document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("unit-form");
     const generatePdfBtn = document.getElementById("generate-pdf");
 
-    // Funzione per leggere il CSV
+    // --- ELEMENTI DINAMICI
+    const metriCablaggioContainer = document.getElementById("metri-cablaggio-container");
+    const materialeConnessioneContainer = document.getElementById("materiale-connessione-container");
+    const scambiatoriCheckbox = document.querySelector('input[name="scambiatori_piatre"]');
+    const scambiatoriDettagli = document.querySelector('input[name="scambiatori_dettagli"]');
+
+    // --- GESTIONE VISIBILITÀ DINAMICA
+    function aggiornaMetriCablaggio() {
+        const quadro = form.querySelector('input[name="quadro_elettrico"]:checked')?.value;
+        if (quadro === "attaccato") {
+            metriCablaggioContainer.style.display = "none";
+        } else {
+            metriCablaggioContainer.style.display = "block";
+        }
+    }
+
+    function aggiornaMaterialeConnessione() {
+        const modulo = form.querySelector('input[name="modulo_serbatoi"]:checked')?.value;
+        if (modulo === "staccato") {
+            materialeConnessioneContainer.style.display = "block";
+        } else {
+            materialeConnessioneContainer.style.display = "none";
+        }
+    }
+
+    function aggiornaDettagliScambiatori() {
+        if (scambiatoriCheckbox.checked) {
+            scambiatoriDettagli.style.display = "block";
+        } else {
+            scambiatoriDettagli.style.display = "none";
+        }
+    }
+
+    form.addEventListener("change", () => {
+        aggiornaMetriCablaggio();
+        aggiornaMaterialeConnessione();
+        aggiornaDettagliScambiatori();
+    });
+
+    // --- IMPORTA CSV
     function readCSV(file) {
         const reader = new FileReader();
         reader.onload = (event) => {
@@ -13,7 +52,6 @@ document.addEventListener("DOMContentLoaded", () => {
         reader.readAsText(file);
     }
 
-    // Funzione per elaborare i dati CSV e riempire il form
     function parseCSV(csvText) {
         const rows = csvText.split("\n").map(row => row.split(","));
         const headers = rows[0].map(h => h.trim().toLowerCase().replace(/\s+/g, "_"));
@@ -22,7 +60,6 @@ document.addEventListener("DOMContentLoaded", () => {
         headers.forEach((header, index) => {
             const value = data[index] ? data[index].trim() : "";
             const input = form.querySelector(`[name="${header}"]`);
-
             if (!input) return;
 
             if (input.type === "radio") {
@@ -34,9 +71,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 input.value = value;
             }
         });
+
+        aggiornaMetriCablaggio();
+        aggiornaMaterialeConnessione();
+        aggiornaDettagliScambiatori();
     }
 
-    // Drag & Drop
     dropArea.addEventListener("dragover", (e) => {
         e.preventDefault();
         dropArea.classList.add("dragover");
@@ -58,19 +98,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Funzione per esportare i dati del form in CSV
+    // --- ESPORTA CSV
     function exportToCSV() {
+        const numeroProgetto = form.querySelector('input[name="numero_progetto"]').value.trim() || "unità";
         let csvContent = "";
         const formData = new FormData(form);
         let headers = [];
         let values = [];
 
-        // Creiamo intestazione e valori
         formData.forEach((value, key) => {
             headers.push(key.replace(/_/g, " "));
-            
-            // Convertiamo i checkbox in "SÌ" o "NO"
-            const inputElement = document.querySelector(`[name="${key}"]`);
+            const inputElement = form.querySelector(`[name="${key}"]`);
             if (inputElement?.type === "checkbox") {
                 values.push(inputElement.checked ? "SÌ" : "NO");
             } else {
@@ -81,53 +119,38 @@ document.addEventListener("DOMContentLoaded", () => {
         csvContent += headers.join(",") + "\n";
         csvContent += values.join(",") + "\n";
 
-        // Creiamo un blob con i dati CSV
         const blob = new Blob([csvContent], { type: "text/csv" });
         const url = URL.createObjectURL(blob);
 
-        // Creiamo un link temporaneo per il download
         const a = document.createElement("a");
         a.href = url;
-        a.download = "unit_data.csv";
+        a.download = `${numeroProgetto}_id_card.csv`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-
-        // Rilasciamo l'oggetto URL per evitare memory leak
         URL.revokeObjectURL(url);
     }
 
-    // Creazione del pulsante per esportare in CSV
+    // --- CREAZIONE PULSANTE CSV
     const exportCsvBtn = document.createElement("button");
     exportCsvBtn.textContent = "Esporta CSV";
     exportCsvBtn.id = "export-csv";
-    exportCsvBtn.style.display = "block";
-    exportCsvBtn.style.width = "100%";
-    exportCsvBtn.style.padding = "12px";
-    exportCsvBtn.style.marginTop = "10px";
-    exportCsvBtn.style.border = "none";
-    exportCsvBtn.style.borderRadius = "5px";
-    exportCsvBtn.style.backgroundColor = "#2196F3";
-    exportCsvBtn.style.color = "white";
-    exportCsvBtn.style.fontSize = "16px";
-    exportCsvBtn.style.cursor = "pointer";
-    exportCsvBtn.style.transition = "background 0.3s ease";
+    exportCsvBtn.className = "button-csv";
     exportCsvBtn.addEventListener("click", exportToCSV);
     form.appendChild(exportCsvBtn);
 
-    // Generazione PDF con sezioni chiare e formattazione pulita
+    // --- GENERA PDF
     generatePdfBtn.addEventListener("click", () => {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
+        const numeroProgetto = form.querySelector('input[name="numero_progetto"]').value.trim() || "unità";
         let y = 15;
 
+        // Titolo principale
         doc.setFont("helvetica", "bold");
         doc.setFontSize(18);
         doc.text("Carta d'Identità Unità Frigo", 10, y);
         y += 10;
-
-        doc.setDrawColor(0);
-        doc.setLineWidth(0.5);
         doc.line(10, y, 200, y);
         y += 10;
 
@@ -135,65 +158,131 @@ document.addEventListener("DOMContentLoaded", () => {
         doc.setFont("helvetica", "normal");
 
         const formData = new FormData(form);
-        let currentSection = "";
 
-        const sections = {
-    "nome_progettista": "INFORMAZIONI GENERALI",
-    "nome_disegnatore": "INFORMAZIONI GENERALI",
-    "nome_progetto": "INFORMAZIONI GENERALI",
-    "numero_progetto": "INFORMAZIONI GENERALI",
-    "anno": "INFORMAZIONI GENERALI",
-    "quadro_elettrico": "QUADRO ELETTRICO",
-    "metri_cablaggio": "QUADRO ELETTRICO",
-    "cablaggio_presente": "CABAGGIO",
-    "modulo_compressori": "MODULO COMPRESSORI",
-    "modulo_serbatoi": "MODULO SERBATOI",
-    "materiale_connessione": "MODULO SERBATOI",
-    "materiale_isolamento": "ISOLAMENTO",
-    "isolamento_ht": "OPZIONI",
-    "isolamento_separatore_olio": "OPZIONI",
-    "convogliamento": "OPZIONI",
-    "cartucce_filtri_montate": "OPZIONI",
-    "backup_unit": "COMPONENTI SPEDITI A PARTE",
-    "safety_valves": "COMPONENTI SPEDITI A PARTE",
-    "muffler": "COMPONENTI SPEDITI A PARTE",
-    "scambiatori_piatre": "COMPONENTI SPEDITI A PARTE",
-    "scambiatori_dettagli": "COMPONENTI SPEDITI A PARTE",
-    "valvole_piombate": "ALTRE SPECIALITÀ",
-    "valvole_piombate_descrizione": "ALTRE SPECIALITÀ",
-    "fascette_metalliche": "ALTRE SPECIALITÀ",
-    "specialita_1": "ALTRE SPECIALITÀ",
-    "specialita_1_descrizione": "ALTRE SPECIALITÀ",
-    "specialita_2": "ALTRE SPECIALITÀ",
-    "specialita_2_descrizione": "ALTRE SPECIALITÀ"
-};
+        const sezioni = {
+            "INFORMAZIONI GENERALI": [
+                ["Nome Progetto", "nome_progetto"],
+                ["Numero Progetto", "numero_progetto"],
+                ["Anno", "anno"],
+                ["Nome Progettista", "nome_progettista"],
+                ["Nome Disegnatore", "nome_disegnatore"]
+            ],
+            "QUADRO ELETTRICO": [
+                ["Quadro Elettrico", "quadro_elettrico"],
+                ["Metri Cablaggio", "metri_cablaggio"]
+            ],
+            "CABBLAGGIO": [
+                ["Cablaggio Presente", "cablaggio_presente"]
+            ],
+            "ISOLAMENTO": [
+                ["Materiale Isolamento", "materiale_isolamento"]
+            ],
+            "OPZIONI": [
+                ["Isolamento HT", "isolamento_ht"],
+                ["Isolamento Separatore Olio", "isolamento_separatore_olio"],
+                ["Convogliamento", "convogliamento"],
+                ["Cartucce Filtri Montate", "cartucce_filtri_montate"]
+            ],
+            "MODULO SERBATOI": [
+                ["Modulo Serbatoi", "modulo_serbatoi"],
+                ["Materiale Connessione", "materiale_connessione"]
+            ],
+            "COMPONENTI SPEDITI A PARTE": [
+                ["Backup Unit", "backup_unit"],
+                ["Valvole di Sicurezza Ricevitore", "safety_valves"],
+                ["Muffler", "muffler"],
+                ["Scambiatori a Piastre", "scambiatori_piatre"],
+                ["Dettaglio Scambiatori", "scambiatori_dettagli"]
+            ],
+            "ALTRE SPECIALITÀ": [
+                ["Valvole Piombate", "valvole_piombate"],
+                ["Descrizione Valvole Piombate", "valvole_piombate_descrizione"],
+                ["Fascette Metalliche", "fascette_metalliche"],
+                ["Specialità 1", "specialita_1"],
+                ["Descrizione Specialità 1", "specialita_1_descrizione"],
+                ["Specialità 2", "specialita_2"],
+                ["Descrizione Specialità 2", "specialita_2_descrizione"]
+            ]
+        };
 
+        const opzioniObbligatorie = [
+            "isolamento_ht", "isolamento_separatore_olio", "convogliamento", "cartucce_filtri_montate"
+        ];
 
-        formData.forEach((value, key) => {
-            let formattedKey = key.replace(/_/g, " ");
+        const soloSeFlaggato = [
+            "backup_unit", "safety_valves", "muffler", "scambiatori_piatre",
+            "valvole_piombate", "fascette_metalliche",
+            "specialita_1", "specialita_2"
+        ];
 
-            if (document.querySelector(`[name="${key}"]`)?.type === "checkbox") {
-                value = document.querySelector(`[name="${key}"]`).checked ? "SÌ" : "NO";
+        // Dentro il loop che scrive le sezioni
+for (const [titoloSezione, campi] of Object.entries(sezioni)) {
+    doc.setFont("helvetica", "bold");
+    doc.text(titoloSezione, 10, y);
+    y += 7;
+    doc.setFont("helvetica", "normal");
+
+    for (const [etichetta, nomeCampo] of campi) {
+        let valore;
+        const inputElement = form.querySelector(`[name="${nomeCampo}"]`);
+
+        if (!inputElement) continue;
+
+        if (inputElement.type === "radio") {
+            const selectedRadio = form.querySelector(`input[name="${nomeCampo}"]:checked`);
+            valore = selectedRadio ? selectedRadio.value : "";
+        } else if (inputElement.type === "checkbox") {
+            const checked = inputElement.checked;
+            if (opzioniObbligatorie.includes(nomeCampo)) {
+                valore = checked ? "SÌ" : "NO";
+            } else if (soloSeFlaggato.includes(nomeCampo)) {
+                if (!checked) continue;
+                valore = "SÌ";
             }
+        } else {
+            valore = inputElement.value.trim();
+        }
 
-            if (sections[key] && currentSection !== sections[key]) {
-                y += 5;
-                doc.setFont("helvetica", "bold");
-                doc.text(sections[key], 10, y);
-                doc.setFont("helvetica", "normal");
-                y += 5;
-                currentSection = sections[key];
+        // --- LOGICA SPECIALE PER "Materiale Connessione"
+        if (nomeCampo === "materiale_connessione") {
+            const moduloSerbatoiChecked = form.querySelector('input[name="modulo_serbatoi"]:checked');
+            const moduloSerbatoiValore = moduloSerbatoiChecked ? moduloSerbatoiChecked.value : "";
+            if (moduloSerbatoiValore !== "staccato") {
+                continue; // NON stampare se modulo serbatoi non è staccato
             }
+        }
 
-            doc.text(`${formattedKey.toUpperCase()}: ${value}`, 10, y);
+        if (valore !== undefined && valore !== "") {
+            doc.text(`${etichetta}: ${valore}`, 10, y);
             y += 7;
+        }
 
-            if (y > 270) {
-                doc.addPage();
-                y = 15;
-            }
-        });
+        if (y > 270) {
+            doc.addPage();
+            y = 15;
+        }
+    }
 
-        doc.save("unit_id_card.pdf");
+    y += 5; // Spazio tra le sezioni
+}
+
+
+
+        // INSERIMENTO IMMAGINE delle valvole di sicurezza
+        const valvoleChecked = form.querySelector('input[name="safety_valves"]').checked;
+        if (valvoleChecked) {
+            const img = new Image();
+            img.src = "valvole_sicurezza.png"; // Deve essere nella stessa cartella
+            img.onload = function() {
+                if (y > 200) {
+                    doc.addPage();
+                    y = 15;
+                }
+                doc.addImage(img, 'PNG', 10, y, 60, 40);
+                doc.save(`${numeroProgetto}_id_card.pdf`);
+            };
+        } else {
+            doc.save(`${numeroProgetto}_id_card.pdf`);
+        }
     });
 });
