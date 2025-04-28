@@ -16,7 +16,7 @@ body {
     margin: auto;
 }
 
-/* Stile del titolo */
+/* Titolo */
 h1 {
     text-align: center;
     color: #333;
@@ -51,23 +51,23 @@ form input, form select {
     border-radius: 5px;
 }
 
-/* Stile per i radio e checkbox */
+/* Radio e Checkbox */
 input[type="radio"], input[type="checkbox"] {
     width: auto;
     margin-right: 5px;
 }
 
-/* Layout per Nome Progettista e Disegnatore */
+/* Layout Nome Progettista e Disegnatore */
 .row {
     display: flex;
-    gap: 20px; /* Spazio tra i campi */
+    gap: 20px;
     align-items: center;
-    margin-bottom: 15px; /* Aggiunge spazio sotto */
+    margin-bottom: 15px;
 }
 
 .row label {
     flex: 1;
-    min-width: 180px; /* Evita compressione e sovrapposizione */
+    min-width: 180px;
     margin-bottom: 5px;
 }
 
@@ -79,14 +79,14 @@ input[type="radio"], input[type="checkbox"] {
     border-radius: 5px;
 }
 
-/* Layout a due colonne */
+/* Due colonne */
 .columns {
     display: flex;
-    gap: 25px; /* Spazio tra le colonne */
+    gap: 25px;
     margin-top: 20px;
 }
 
-/* Stile delle colonne */
+/* Colonna */
 .column {
     flex: 1;
     background: #f9f9f9;
@@ -95,7 +95,7 @@ input[type="radio"], input[type="checkbox"] {
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
 
-/* Stile Pulsanti */
+/* Pulsanti */
 button {
     display: block;
     width: 100%;
@@ -114,7 +114,7 @@ button:hover {
     background-color: #1976D2;
 }
 
-/* Responsive: su schermi piccoli i campi vanno in colonna */
+/* Responsive */
 @media (max-width: 768px) {
     .row {
         flex-direction: column;
@@ -124,3 +124,4 @@ button:hover {
         flex-direction: column;
     }
 }
+ 
