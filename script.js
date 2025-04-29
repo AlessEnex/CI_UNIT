@@ -14,22 +14,36 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function parseCSV(csvText) {
-        const rows = csvText.split("\n").map(row => row.split(","));
+        const rows = csvText.trim().split("\n").map(row => row.split(","));
+        if (rows.length < 2) return; // se non ci sono dati reali, esci
+
         const headers = rows[0].map(h => h.trim().toLowerCase().replace(/\s+/g, "_"));
-        const data = rows[1] || [];
+        const data = rows[1].map(d => d.trim());
 
         headers.forEach((header, index) => {
-            const value = data[index] ? data[index].trim() : "";
-            const inputs = form.querySelectorAll(`[name="${header}"]`);
+            const value = data[index] || "";
+            const elements = form.querySelectorAll(`[name="${header}"]`);
 
-            inputs.forEach(input => {
-                if (input.type === "radio" || input.type === "checkbox") {
-                    input.checked = (input.value === value || value.toLowerCase() === "sì");
+            elements.forEach(input => {
+                if (!input) return;
+
+                if (input.type === "radio") {
+                    if (input.value === value) {
+                        input.checked = true;
+                    }
+                } else if (input.type === "checkbox") {
+                    input.checked = value.toLowerCase() === "sì";
                 } else {
                     input.value = value;
                 }
             });
         });
+
+        // Aggiorna campi dinamici
+        toggleExtraCablaggio();
+        toggleMaterialeConnessione();
+        toggleScambiatoriDettagli();
+        toggleBendeDescrizione();
     }
 
     dropArea.addEventListener("dragover", (e) => {
@@ -92,29 +106,33 @@ document.addEventListener("DOMContentLoaded", () => {
         const cablaggio = form.querySelector('input[name="cablaggio_presente"]:checked')?.value;
         const quadro = form.querySelector('input[name="quadro_elettrico"]:checked')?.value;
         const container = document.getElementById("extra-cablaggio-container");
-        if (cablaggio === "si" && (quadro === "non presente" || quadro === "staccato")) {
-            container.style.display = "block";
-        } else {
-            container.style.display = "none";
+        if (container) {
+            container.style.display = (cablaggio === "si" && (quadro === "non presente" || quadro === "staccato")) ? "block" : "none";
         }
     }
 
     function toggleMaterialeConnessione() {
         const modulo = form.querySelector('input[name="modulo_serbatoi"]:checked')?.value;
         const select = form.querySelector('select[name="materiale_connessione"]');
-        select.parentElement.style.display = modulo === "staccato" ? "block" : "none";
+        if (select) {
+            select.parentElement.style.display = (modulo === "staccato") ? "block" : "none";
+        }
     }
 
     function toggleScambiatoriDettagli() {
         const check = form.querySelector('input[name="scambiatori_piatre"]');
         const dettaglio = form.querySelector('input[name="scambiatori_dettagli"]');
-        dettaglio.style.display = check.checked ? "block" : "none";
+        if (check && dettaglio) {
+            dettaglio.style.display = check.checked ? "block" : "none";
+        }
     }
 
     function toggleBendeDescrizione() {
         const check = form.querySelector('input[name="bende_scaldanti"]');
         const descrizione = form.querySelector('input[name="bende_scaldanti_descrizione"]');
-        descrizione.style.display = check.checked ? "block" : "none";
+        if (check && descrizione) {
+            descrizione.style.display = check.checked ? "block" : "none";
+        }
     }
 
     form.addEventListener("change", () => {
@@ -225,7 +243,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         const numeroProgetto = values["numero_progetto"] || "unit";
-        let immagineInserita = false;
+        let inserisciImmagine = false;
+        let yImmagine = 0;
 
         for (const [titoloSezione, campi] of Object.entries(sections)) {
             doc.setFont("helvetica", "bold");
@@ -250,16 +269,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     y += 7;
                 }
 
-                if (nomeCampo === "safety_valves" && values[nomeCampo] && !immagineInserita) {
-                    const img = new Image();
-                    img.src = "valvole_sicurezza.png";
-                    img.onload = function() {
-                        doc.addImage(img, "PNG", 10, y, 50, 30);
-                        y += 35;
-                        doc.save(`${numeroProgetto}_id_card.pdf`);
-                    };
-                    immagineInserita = true;
-                    return;
+                if (nomeCampo === "safety_valves" && values[nomeCampo]) {
+                    inserisciImmagine = true;
+                    yImmagine = y;
+                    y += 35;
                 }
 
                 if (y > 270) {
@@ -271,9 +284,15 @@ document.addEventListener("DOMContentLoaded", () => {
             y += 5;
         }
 
-        if (!immagineInserita) {
+        if (inserisciImmagine) {
+            const img = new Image();
+            img.src = "valvole_sicurezza.png";
+            img.onload = function() {
+                doc.addImage(img, "PNG", 10, yImmagine, 50, 30);
+                doc.save(`${numeroProgetto}_id_card.pdf`);
+            };
+        } else {
             doc.save(`${numeroProgetto}_id_card.pdf`);
         }
     });
 });
-
