@@ -141,130 +141,129 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- GENERA PDF
     generatePdfBtn.addEventListener("click", () => {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const numeroProgetto = form.querySelector('input[name="numero_progetto"]').value.trim() || "unità";
-        let y = 15;
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    let y = 15;
 
-        // Titolo principale
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(18);
-        doc.text("Carta d'Identità Unità Frigo", 10, y);
-        y += 10;
-        doc.line(10, y, 200, y);
-        y += 10;
-
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "normal");
-
-        const formData = new FormData(form);
-
-        const sezioni = {
-            "INFORMAZIONI GENERALI": [
-                ["Nome Progetto", "nome_progetto"],
-                ["Numero Progetto", "numero_progetto"],
-                ["Anno", "anno"],
-                ["Nome Progettista", "nome_progettista"],
-                ["Nome Disegnatore", "nome_disegnatore"]
-            ],
-            "QUADRO ELETTRICO": [
-                ["Quadro Elettrico", "quadro_elettrico"],
-                ["Metri Cablaggio", "metri_cablaggio"]
-            ],
-            "CABBLAGGIO": [
-                ["Cablaggio Presente", "cablaggio_presente"]
-            ],
-            "ISOLAMENTO": [
-                ["Materiale Isolamento", "materiale_isolamento"]
-            ],
-            "OPZIONI": [
-                ["Isolamento HT", "isolamento_ht"],
-                ["Isolamento Separatore Olio", "isolamento_separatore_olio"],
-                ["Convogliamento", "convogliamento"],
-                ["Cartucce Filtri Montate", "cartucce_filtri_montate"]
-            ],
-            "MODULO SERBATOI": [
-                ["Modulo Serbatoi", "modulo_serbatoi"],
-                ["Materiale Connessione", "materiale_connessione"]
-            ],
-            "COMPONENTI SPEDITI A PARTE": [
-                ["Backup Unit", "backup_unit"],
-                ["Valvole di Sicurezza Ricevitore", "safety_valves"],
-                ["Muffler", "muffler"],
-                ["Scambiatori a Piastre", "scambiatori_piatre"],
-                ["Dettaglio Scambiatori", "scambiatori_dettagli"]
-            ],
-            "ALTRE SPECIALITÀ": [
-                ["Valvole Piombate", "valvole_piombate"],
-                ["Descrizione Valvole Piombate", "valvole_piombate_descrizione"],
-                ["Fascette Metalliche", "fascette_metalliche"],
-                ["Specialità 1", "specialita_1"],
-                ["Descrizione Specialità 1", "specialita_1_descrizione"],
-                ["Specialità 2", "specialita_2"],
-                ["Descrizione Specialità 2", "specialita_2_descrizione"]
-            ]
-        };
-
-        const opzioniObbligatorie = [
-            "isolamento_ht", "isolamento_separatore_olio", "convogliamento", "cartucce_filtri_montate"
-        ];
-
-        const soloSeFlaggato = [
-            "backup_unit", "safety_valves", "muffler", "scambiatori_piatre",
-            "valvole_piombate", "fascette_metalliche",
-            "specialita_1", "specialita_2"
-        ];
-
-        // Dentro il loop che scrive le sezioni
-for (const [titoloSezione, campi] of Object.entries(sezioni)) {
     doc.setFont("helvetica", "bold");
-    doc.text(titoloSezione, 10, y);
-    y += 7;
+    doc.setFontSize(18);
+    doc.text("Carta d'Identità Unità Frigo", 10, y);
+    y += 10;
+
+    doc.setDrawColor(0);
+    doc.setLineWidth(0.5);
+    doc.line(10, y, 200, y);
+    y += 10;
+
+    doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
 
-    for (const [etichetta, nomeCampo] of campi) {
-        let valore;
-        const inputElement = form.querySelector(`[name="${nomeCampo}"]`);
+    const formData = new FormData(form);
+    let currentSection = "";
 
-        if (!inputElement) continue;
+    const sections = {
+        "INFORMAZIONI GENERALI": [
+            ["Nome Progetto", "nome_progetto"],
+            ["Numero Progetto", "numero_progetto"],
+            ["Anno", "anno"],
+            ["Nome Progettista", "nome_progettista"],
+            ["Nome Disegnatore", "nome_disegnatore"]
+        ],
+        "QUADRO ELETTRICO": [
+            ["Quadro Elettrico", "quadro_elettrico"],
+            ["Metri Cablaggio", "metri_cablaggio"],
+            ["Cablaggio Presente", "cablaggio_presente"]
+        ],
+        "ISOLAMENTO": [
+            ["Materiale Isolamento", "materiale_isolamento"]
+        ],
+        "OPZIONI": [
+            ["Isolamento HT", "isolamento_ht"],
+            ["Isolamento Separatore Olio", "isolamento_separatore_olio"],
+            ["Convogliamento", "convogliamento"],
+            ["Cartucce Filtri Montate", "cartucce_filtri_montate"]
+        ],
+        "MODULO SERBATOI": [
+            ["Modulo Serbatoi", "modulo_serbatoi"],
+            ["Materiale Connessione", "materiale_connessione"]
+        ],
+        "COMPONENTI SPEDITI A PARTE": [
+            ["Backup Unit", "backup_unit"],
+            ["Valvole di Sicurezza Ricevitore", "safety_valves"],
+            ["Muffler", "muffler"],
+            ["Scambiatori a Piastre", "scambiatori_piatre"],
+            ["Dettaglio Scambiatori", "scambiatori_dettagli"]
+        ],
+        "ALTRE SPECIALITÀ": [
+            ["Valvole Piombate", "valvole_piombate"],
+            ["Dettaglio Valvole Piombate", "valvole_piombate_descrizione"],
+            ["Fascette Metalliche", "fascette_metalliche"],
+            ["Specialità 1", "specialita_1"],
+            ["Descrizione 1", "specialita_1_descrizione"],
+            ["Specialità 2", "specialita_2"],
+            ["Descrizione 2", "specialita_2_descrizione"]
+        ]
+    };
 
-        if (inputElement.type === "radio") {
-            const selectedRadio = form.querySelector(`input[name="${nomeCampo}"]:checked`);
-            valore = selectedRadio ? selectedRadio.value : "";
-        } else if (inputElement.type === "checkbox") {
-            const checked = inputElement.checked;
-            if (opzioniObbligatorie.includes(nomeCampo)) {
-                valore = checked ? "SÌ" : "NO";
-            } else if (soloSeFlaggato.includes(nomeCampo)) {
-                if (!checked) continue;
-                valore = "SÌ";
+    for (const [titoloSezione, campi] of Object.entries(sections)) {
+        doc.setFont("helvetica", "bold");
+        doc.text(titoloSezione, 10, y);
+        y += 7;
+        doc.setFont("helvetica", "normal");
+
+        for (const [etichetta, nomeCampo] of campi) {
+            let valore = "";
+            const inputElement = form.querySelector(`[name="${nomeCampo}"]`);
+            if (!inputElement) continue;
+
+            if (inputElement.type === "radio") {
+                const selectedRadio = form.querySelector(`input[name="${nomeCampo}"]:checked`);
+                valore = selectedRadio ? selectedRadio.value : "";
+            } else if (inputElement.type === "checkbox") {
+                valore = inputElement.checked ? "SÌ" : "NO";
+            } else {
+                valore = inputElement.value.trim();
             }
-        } else {
-            valore = inputElement.value.trim();
-        }
 
-        // --- LOGICA SPECIALE PER "Materiale Connessione"
-        if (nomeCampo === "materiale_connessione") {
-            const moduloSerbatoiChecked = form.querySelector('input[name="modulo_serbatoi"]:checked');
-            const moduloSerbatoiValore = moduloSerbatoiChecked ? moduloSerbatoiChecked.value : "";
-            if (moduloSerbatoiValore !== "staccato") {
-                continue; // NON stampare se modulo serbatoi non è staccato
+            // Gestione speciale: mostra Materiale Connessione solo se Modulo Serbatoi = Staccato
+            if (nomeCampo === "materiale_connessione") {
+                const moduloSerbatoi = form.querySelector('input[name="modulo_serbatoi"]:checked')?.value;
+                if (moduloSerbatoi !== "staccato") continue;
+            }
+
+            // Stampa solo se ha senso
+            if (valore !== undefined && valore !== "") {
+                doc.text(`${etichetta}: ${valore}`, 10, y);
+                y += 7;
+            }
+
+            // Se stiamo scrivendo "Valvole di Sicurezza Ricevitore: SÌ", allora inseriamo immagine
+            if (nomeCampo === "safety_valves" && valore === "SÌ") {
+                const img = new Image();
+                img.src = "valvole_sicurezza.png";
+                img.onload = function() {
+                    doc.addImage(img, "PNG", 10, y, 50, 30); // X=10, Y=y corrente
+                    y += 35; // Dopo immagine, aggiungiamo spazio
+                    doc.save(`${form.querySelector('[name="numero_progetto"]').value}_id_card.pdf`);
+                };
+                return; // Aspettiamo che carichi immagine prima di salvare
+            }
+
+            if (y > 270) {
+                doc.addPage();
+                y = 15;
             }
         }
 
-        if (valore !== undefined && valore !== "") {
-            doc.text(`${etichetta}: ${valore}`, 10, y);
-            y += 7;
-        }
-
-        if (y > 270) {
-            doc.addPage();
-            y = 15;
-        }
+        y += 5; // Spazio tra sezioni
     }
 
-    y += 5; // Spazio tra le sezioni
-}
+    // Salva il PDF se non abbiamo inserito immagine (caso normale)
+    setTimeout(() => {
+        doc.save(`${form.querySelector('[name="numero_progetto"]').value}_id_card.pdf`);
+    }, 300);
+});
+
 
 
 
