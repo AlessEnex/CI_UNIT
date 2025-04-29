@@ -4,46 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("unit-form");
     const generatePdfBtn = document.getElementById("generate-pdf");
 
-    // --- ELEMENTI DINAMICI
-    const metriCablaggioContainer = document.getElementById("metri-cablaggio-container");
-    const materialeConnessioneContainer = document.getElementById("materiale-connessione-container");
-    const scambiatoriCheckbox = document.querySelector('input[name="scambiatori_piatre"]');
-    const scambiatoriDettagli = document.querySelector('input[name="scambiatori_dettagli"]');
-
-    // --- GESTIONE VISIBILITÀ DINAMICA
-    function aggiornaMetriCablaggio() {
-        const quadro = form.querySelector('input[name="quadro_elettrico"]:checked')?.value;
-        if (quadro === "attaccato") {
-            metriCablaggioContainer.style.display = "none";
-        } else {
-            metriCablaggioContainer.style.display = "block";
-        }
-    }
-
-    function aggiornaMaterialeConnessione() {
-        const modulo = form.querySelector('input[name="modulo_serbatoi"]:checked')?.value;
-        if (modulo === "staccato") {
-            materialeConnessioneContainer.style.display = "block";
-        } else {
-            materialeConnessioneContainer.style.display = "none";
-        }
-    }
-
-    function aggiornaDettagliScambiatori() {
-        if (scambiatoriCheckbox.checked) {
-            scambiatoriDettagli.style.display = "block";
-        } else {
-            scambiatoriDettagli.style.display = "none";
-        }
-    }
-
-    form.addEventListener("change", () => {
-        aggiornaMetriCablaggio();
-        aggiornaMaterialeConnessione();
-        aggiornaDettagliScambiatori();
-    });
-
-    // --- IMPORTA CSV
+    // CSV IMPORT
     function readCSV(file) {
         const reader = new FileReader();
         reader.onload = (event) => {
@@ -59,22 +20,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
         headers.forEach((header, index) => {
             const value = data[index] ? data[index].trim() : "";
-            const input = form.querySelector(`[name="${header}"]`);
-            if (!input) return;
+            const inputs = form.querySelectorAll(`[name="${header}"]`);
 
-            if (input.type === "radio") {
-                const radio = form.querySelector(`[name="${header}"][value="${value}"]`);
-                if (radio) radio.checked = true;
-            } else if (input.type === "checkbox") {
-                input.checked = value.toLowerCase() === "sì";
-            } else {
-                input.value = value;
-            }
+            inputs.forEach(input => {
+                if (input.type === "radio" || input.type === "checkbox") {
+                    input.checked = (input.value === value || value.toLowerCase() === "sì");
+                } else {
+                    input.value = value;
+                }
+            });
         });
-
-        aggiornaMetriCablaggio();
-        aggiornaMaterialeConnessione();
-        aggiornaDettagliScambiatori();
     }
 
     dropArea.addEventListener("dragover", (e) => {
@@ -86,42 +41,42 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
         dropArea.classList.remove("dragover");
         const file = e.dataTransfer.files[0];
-        if (file && file.type === "text/csv") {
-            readCSV(file);
-        }
+        if (file && file.type === "text/csv") readCSV(file);
     });
 
     fileInput.addEventListener("change", (e) => {
         const file = e.target.files[0];
-        if (file && file.type === "text/csv") {
-            readCSV(file);
-        }
+        if (file && file.type === "text/csv") readCSV(file);
     });
 
-    // --- ESPORTA CSV
-    function exportToCSV() {
-        const numeroProgetto = form.querySelector('input[name="numero_progetto"]').value.trim() || "unità";
-        let csvContent = "";
-        const formData = new FormData(form);
+    // CSV EXPORT
+    const exportCsvBtn = document.createElement("button");
+    exportCsvBtn.textContent = "Esporta CSV";
+    exportCsvBtn.id = "export-csv";
+    exportCsvBtn.className = "csv-button";
+    exportCsvBtn.addEventListener("click", () => {
         let headers = [];
         let values = [];
 
-        formData.forEach((value, key) => {
-            headers.push(key.replace(/_/g, " "));
-            const inputElement = form.querySelector(`[name="${key}"]`);
-            if (inputElement?.type === "checkbox") {
-                values.push(inputElement.checked ? "SÌ" : "NO");
+        const inputs = form.querySelectorAll("input, select");
+        inputs.forEach(input => {
+            const name = input.name;
+            if (!name || headers.includes(name)) return;
+            headers.push(name);
+            if (input.type === "checkbox") {
+                values.push(input.checked ? "SÌ" : "NO");
+            } else if (input.type === "radio") {
+                const selected = form.querySelector(`input[name="${name}"]:checked`);
+                values.push(selected ? selected.value : "");
             } else {
-                values.push(value);
+                values.push(input.value);
             }
         });
 
-        csvContent += headers.join(",") + "\n";
-        csvContent += values.join(",") + "\n";
-
+        const csvContent = headers.join(",") + "\n" + values.join(",") + "\n";
         const blob = new Blob([csvContent], { type: "text/csv" });
         const url = URL.createObjectURL(blob);
-
+        const numeroProgetto = form.querySelector('[name="numero_progetto"]').value || "unit";
         const a = document.createElement("a");
         a.href = url;
         a.download = `${numeroProgetto}_id_card.csv`;
@@ -129,158 +84,194 @@ document.addEventListener("DOMContentLoaded", () => {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-    }
-
-    // --- CREAZIONE PULSANTE CSV
-    const exportCsvBtn = document.createElement("button");
-    exportCsvBtn.textContent = "Esporta CSV";
-    exportCsvBtn.id = "export-csv";
-    exportCsvBtn.className = "button-csv";
-    exportCsvBtn.addEventListener("click", exportToCSV);
+    });
     form.appendChild(exportCsvBtn);
 
-    // --- GENERA PDF
-    generatePdfBtn.addEventListener("click", () => {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    let y = 15;
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.text("Carta d'Identità Unità Frigo", 10, y);
-    y += 10;
-
-    doc.setDrawColor(0);
-    doc.setLineWidth(0.5);
-    doc.line(10, y, 200, y);
-    y += 10;
-
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "normal");
-
-    const formData = new FormData(form);
-    let currentSection = "";
-
-    const sections = {
-        "INFORMAZIONI GENERALI": [
-            ["Nome Progetto", "nome_progetto"],
-            ["Numero Progetto", "numero_progetto"],
-            ["Anno", "anno"],
-            ["Nome Progettista", "nome_progettista"],
-            ["Nome Disegnatore", "nome_disegnatore"]
-        ],
-        "QUADRO ELETTRICO": [
-            ["Quadro Elettrico", "quadro_elettrico"],
-            ["Metri Cablaggio", "metri_cablaggio"],
-            ["Cablaggio Presente", "cablaggio_presente"]
-        ],
-        "ISOLAMENTO": [
-            ["Materiale Isolamento", "materiale_isolamento"]
-        ],
-        "OPZIONI": [
-            ["Isolamento HT", "isolamento_ht"],
-            ["Isolamento Separatore Olio", "isolamento_separatore_olio"],
-            ["Convogliamento", "convogliamento"],
-            ["Cartucce Filtri Montate", "cartucce_filtri_montate"]
-        ],
-        "MODULO SERBATOI": [
-            ["Modulo Serbatoi", "modulo_serbatoi"],
-            ["Materiale Connessione", "materiale_connessione"]
-        ],
-        "COMPONENTI SPEDITI A PARTE": [
-            ["Backup Unit", "backup_unit"],
-            ["Valvole di Sicurezza Ricevitore", "safety_valves"],
-            ["Muffler", "muffler"],
-            ["Scambiatori a Piastre", "scambiatori_piatre"],
-            ["Dettaglio Scambiatori", "scambiatori_dettagli"]
-        ],
-        "ALTRE SPECIALITÀ": [
-            ["Valvole Piombate", "valvole_piombate"],
-            ["Dettaglio Valvole Piombate", "valvole_piombate_descrizione"],
-            ["Fascette Metalliche", "fascette_metalliche"],
-            ["Specialità 1", "specialita_1"],
-            ["Descrizione 1", "specialita_1_descrizione"],
-            ["Specialità 2", "specialita_2"],
-            ["Descrizione 2", "specialita_2_descrizione"]
-        ]
-    };
-
-    for (const [titoloSezione, campi] of Object.entries(sections)) {
-        doc.setFont("helvetica", "bold");
-        doc.text(titoloSezione, 10, y);
-        y += 7;
-        doc.setFont("helvetica", "normal");
-
-        for (const [etichetta, nomeCampo] of campi) {
-            let valore = "";
-            const inputElement = form.querySelector(`[name="${nomeCampo}"]`);
-            if (!inputElement) continue;
-
-            if (inputElement.type === "radio") {
-                const selectedRadio = form.querySelector(`input[name="${nomeCampo}"]:checked`);
-                valore = selectedRadio ? selectedRadio.value : "";
-            } else if (inputElement.type === "checkbox") {
-                valore = inputElement.checked ? "SÌ" : "NO";
-            } else {
-                valore = inputElement.value.trim();
-            }
-
-            // Gestione speciale: mostra Materiale Connessione solo se Modulo Serbatoi = Staccato
-            if (nomeCampo === "materiale_connessione") {
-                const moduloSerbatoi = form.querySelector('input[name="modulo_serbatoi"]:checked')?.value;
-                if (moduloSerbatoi !== "staccato") continue;
-            }
-
-            // Stampa solo se ha senso
-            if (valore !== undefined && valore !== "") {
-                doc.text(`${etichetta}: ${valore}`, 10, y);
-                y += 7;
-            }
-
-            // Se stiamo scrivendo "Valvole di Sicurezza Ricevitore: SÌ", allora inseriamo immagine
-            if (nomeCampo === "safety_valves" && valore === "SÌ") {
-                const img = new Image();
-                img.src = "valvole_sicurezza.png";
-                img.onload = function() {
-                    doc.addImage(img, "PNG", 10, y, 50, 30); // X=10, Y=y corrente
-                    y += 35; // Dopo immagine, aggiungiamo spazio
-                    doc.save(`${form.querySelector('[name="numero_progetto"]').value}_id_card.pdf`);
-                };
-                return; // Aspettiamo che carichi immagine prima di salvare
-            }
-
-            if (y > 270) {
-                doc.addPage();
-                y = 15;
-            }
+    // GESTIONE CAMPI DINAMICI
+    function toggleExtraCablaggio() {
+        const cablaggio = form.querySelector('input[name="cablaggio_presente"]:checked')?.value;
+        const quadro = form.querySelector('input[name="quadro_elettrico"]:checked')?.value;
+        const container = document.getElementById("extra-cablaggio-container");
+        if (cablaggio === "si" && (quadro === "non presente" || quadro === "staccato")) {
+            container.style.display = "block";
+        } else {
+            container.style.display = "none";
         }
-
-        y += 5; // Spazio tra sezioni
     }
 
-    // Salva il PDF se non abbiamo inserito immagine (caso normale)
-    setTimeout(() => {
-        doc.save(`${form.querySelector('[name="numero_progetto"]').value}_id_card.pdf`);
-    }, 300);
-});
+    function toggleMaterialeConnessione() {
+        const modulo = form.querySelector('input[name="modulo_serbatoi"]:checked')?.value;
+        const select = form.querySelector('select[name="materiale_connessione"]');
+        select.parentElement.style.display = modulo === "staccato" ? "block" : "none";
+    }
 
+    function toggleScambiatoriDettagli() {
+        const check = form.querySelector('input[name="scambiatori_piatre"]');
+        const dettaglio = form.querySelector('input[name="scambiatori_dettagli"]');
+        dettaglio.style.display = check.checked ? "block" : "none";
+    }
 
+    function toggleBendeDescrizione() {
+        const check = form.querySelector('input[name="bende_scaldanti"]');
+        const descrizione = form.querySelector('input[name="bende_scaldanti_descrizione"]');
+        descrizione.style.display = check.checked ? "block" : "none";
+    }
 
+    form.addEventListener("change", () => {
+        toggleExtraCablaggio();
+        toggleMaterialeConnessione();
+        toggleScambiatoriDettagli();
+        toggleBendeDescrizione();
+    });
 
-        // INSERIMENTO IMMAGINE delle valvole di sicurezza
-        const valvoleChecked = form.querySelector('input[name="safety_valves"]').checked;
-        if (valvoleChecked) {
-            const img = new Image();
-            img.src = "valvole_sicurezza.png"; // Deve essere nella stessa cartella
-            img.onload = function() {
-                if (y > 200) {
+    toggleExtraCablaggio();
+    toggleMaterialeConnessione();
+    toggleScambiatoriDettagli();
+    toggleBendeDescrizione();
+
+    // PDF EXPORT
+    generatePdfBtn.addEventListener("click", () => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        let y = 15;
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.text("Carta d'Identità Unità Frigo", 10, y);
+        y += 10;
+
+        doc.setDrawColor(0);
+        doc.setLineWidth(0.5);
+        doc.line(10, y, 200, y);
+        y += 10;
+
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "normal");
+
+        const sections = {
+            "INFORMAZIONI GENERALI": [
+                ["Nome Progetto", "nome_progetto"],
+                ["Numero Progetto", "numero_progetto"],
+                ["Anno", "anno"],
+                ["Nome Progettista", "nome_progettista"],
+                ["Nome Disegnatore", "nome_disegnatore"]
+            ],
+            "QUADRO ELETTRICO": [
+                ["Quadro Elettrico", "quadro_elettrico"],
+                ["Metri Cablaggio", "metri_cablaggio"],
+                ["Cablaggio Presente", "cablaggio_presente"]
+            ],
+            "ISOLAMENTO": [
+                ["Materiale Isolamento", "materiale_isolamento"]
+            ],
+            "OPZIONI": [
+                ["Isolamento HT", "isolamento_ht"],
+                ["Isolamento Separatore Olio", "isolamento_separatore_olio"],
+                ["Convogliamento", "convogliamento"],
+                ["Cartucce Filtri Montate", "cartucce_filtri_montate"]
+            ],
+            "MODULO SERBATOI": [
+                ["Modulo Serbatoi", "modulo_serbatoi"],
+                ["Materiale Connessione", "materiale_connessione"]
+            ],
+            "COMPONENTI SPEDITI A PARTE": [
+                ["Backup Unit", "backup_unit"],
+                ["Valvole di Sicurezza Ricevitore", "safety_valves"],
+                ["Muffler", "muffler"],
+                ["Scambiatori a Piastre", "scambiatori_piatre"],
+                ["Dettaglio Scambiatori", "scambiatori_dettagli"]
+            ],
+            "ALTRE SPECIALITÀ": [
+                ["Valvole Piombate", "valvole_piombate"],
+                ["Dettaglio Valvole Piombate", "valvole_piombate_descrizione"],
+                ["Fascette Metalliche", "fascette_metalliche"],
+                ["Specialità 1", "specialita_1"],
+                ["Descrizione 1", "specialita_1_descrizione"],
+                ["Specialità 2", "specialita_2"],
+                ["Descrizione 2", "specialita_2_descrizione"]
+            ]
+        };
+
+        const opzioniObbligatorie = [
+            "isolamento_ht",
+            "isolamento_separatore_olio",
+            "convogliamento",
+            "cartucce_filtri_montate"
+        ];
+
+        const soloSeFlaggato = [
+            "backup_unit",
+            "safety_valves",
+            "muffler",
+            "scambiatori_piatre",
+            "valvole_piombate",
+            "fascette_metalliche",
+            "specialita_1",
+            "specialita_2"
+        ];
+
+        const inputs = form.querySelectorAll("input, select");
+        const values = {};
+        inputs.forEach(input => {
+            const name = input.name;
+            if (!name) return;
+            if (input.type === "radio") {
+                if (input.checked) values[name] = input.value;
+            } else if (input.type === "checkbox") {
+                values[name] = input.checked;
+            } else {
+                values[name] = input.value.trim();
+            }
+        });
+
+        const numeroProgetto = values["numero_progetto"] || "unit";
+        let immagineInserita = false;
+
+        for (const [titoloSezione, campi] of Object.entries(sections)) {
+            doc.setFont("helvetica", "bold");
+            doc.text(titoloSezione, 10, y);
+            y += 7;
+            doc.setFont("helvetica", "normal");
+
+            for (const [etichetta, nomeCampo] of campi) {
+                let valore = values[nomeCampo];
+
+                if (nomeCampo === "materiale_connessione" && values["modulo_serbatoi"] !== "staccato") continue;
+                if (soloSeFlaggato.includes(nomeCampo) && !values[nomeCampo]) continue;
+
+                if (opzioniObbligatorie.includes(nomeCampo)) {
+                    valore = valore ? "SÌ" : "NO";
+                } else if (typeof valore === "boolean") {
+                    valore = valore ? "SÌ" : "NO";
+                }
+
+                if (valore !== undefined && valore !== "") {
+                    doc.text(`${etichetta}: ${valore}`, 10, y);
+                    y += 7;
+                }
+
+                if (nomeCampo === "safety_valves" && values[nomeCampo] && !immagineInserita) {
+                    const img = new Image();
+                    img.src = "valvole_sicurezza.png";
+                    img.onload = function() {
+                        doc.addImage(img, "PNG", 10, y, 50, 30);
+                        y += 35;
+                        doc.save(`${numeroProgetto}_id_card.pdf`);
+                    };
+                    immagineInserita = true;
+                    return;
+                }
+
+                if (y > 270) {
                     doc.addPage();
                     y = 15;
                 }
-                doc.addImage(img, 'PNG', 10, y, 60, 40);
-                doc.save(`${numeroProgetto}_id_card.pdf`);
-            };
-        } else {
+            }
+
+            y += 5;
+        }
+
+        if (!immagineInserita) {
             doc.save(`${numeroProgetto}_id_card.pdf`);
         }
     });
