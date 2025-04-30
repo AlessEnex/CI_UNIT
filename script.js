@@ -269,11 +269,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     y += 7;
                 }
 
-                if (nomeCampo === "safety_valves" && values[nomeCampo]) {
-                    inserisciImmagine = true;
-                    yImmagine = y;
-                    y += 35;
-                }
+
 
                 if (y > 270) {
                     doc.addPage();
@@ -283,16 +279,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
             y += 5;
         }
-
-        if (inserisciImmagine) {
-            const img = new Image();
-            img.src = "valvole_sicurezza.png";
-            img.onload = function() {
-                doc.addImage(img, "PNG", 10, yImmagine, 50, 30);
-                doc.save(`${numeroProgetto}_id_card.pdf`);
-            };
-        } else {
-            doc.save(`${numeroProgetto}_id_card.pdf`);
-        }
+doc.save(`${numeroProgetto}_id_card.pdf`);
+       
     });
 });
+
