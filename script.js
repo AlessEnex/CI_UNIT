@@ -195,6 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
             "COMPONENTI SPEDITI A PARTE": [
                 ["Backup Unit", "backup_unit"],
                 ["Valvole di Sicurezza Ricevitore", "safety_valves"],
+                ["Inverter", "inverter"],
                 ["Muffler", "muffler"],
                 ["Scambiatori a Piastre", "scambiatori_piatre"],
                 ["Dettaglio Scambiatori", "scambiatori_dettagli"]
